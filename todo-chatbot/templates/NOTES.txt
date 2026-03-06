@@ -1,0 +1,11 @@
+Todo Chatbot deployed successfully!
+
+Access the application:
+
+  Frontend: minikube service {{ include "todo-chatbot.fullname" . }}-frontend --url
+  Backend:  minikube service {{ include "todo-chatbot.fullname" . }}-backend --url
+
+Or use port-forward:
+
+  kubectl port-forward svc/{{ include "todo-chatbot.fullname" . }}-frontend {{ .Values.frontend.service.port }}:{{ .Values.frontend.service.port }}
+  kubectl port-forward svc/{{ include "todo-chatbot.fullname" . }}-backend {{ .Values.backend.service.port }}:{{ .Values.backend.service.port }}

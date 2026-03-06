@@ -1,0 +1,106 @@
+# Todo Chatbot Helm Values
+# Frontend + Backend deployment for Minikube
+
+replicaCount: 1
+
+# --- Frontend (Next.js) ---
+frontend:
+  image:
+    repository: phase4-frontend
+    tag: latest
+    pullPolicy: Never  # Use local Minikube image
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30000
+  env:
+    NEXT_PUBLIC_API_URL: "http://todo-chatbot-backend:8000"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 3000
+    initialDelaySeconds: 15
+    periodSeconds: 10
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 3000
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+# --- Backend (FastAPI) ---
+backend:
+  image:
+    repository: phase4-backend
+    tag: latest
+    pullPolicy: Never  # Use local Minikube image
+  service:
+    type: NodePort
+    port: 8000
+    nodePort: 30001
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 8000
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+# --- Backend environment (non-secret) ---
+config:
+  ENVIRONMENT: "development"
+  LOG_LEVEL: "INFO"
+  CORS_ORIGINS: "http://localhost:30000,http://127.0.0.1:30000"
+  JWT_ALGORITHM: "HS256"
+  JWT_EXPIRES_IN: "3600"
+  GROQ_BASE_URL: "https://api.groq.com/openai/v1"
+  GROQ_MODEL: "llama-3.1-8b-instant"
+
+# --- Backend secrets ---
+secrets:
+  DATABASE_URL: "postgresql+asyncpg://neondb_owner:npg_kcx8sHPZv5qa@ep-lucky-leaf-aic91xxz-pooler.c-4.us-east-1.aws.neon.tech/neondb?ssl=require"
+  JWT_SECRET_KEY: "supersecretkey-replace-in-production"
+  GROQ_API_KEY: ""
+
+# --- Shared ---
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+ingress:
+  enabled: false
+
+httpRoute:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
